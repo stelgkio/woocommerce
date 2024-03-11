@@ -6,5 +6,5 @@ wooCommerce Go REST API Library
 ## Install
 
 ```console
- go get github.com/chenyangguang/woocommerce
+ go get github.com/stelgkio/woocommerce
 ```

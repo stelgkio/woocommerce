@@ -1,4 +1,4 @@
-module github.com/chenyangguang/woocommerce
+module github.com/stelgkio/woocommerce
 
 go 1.14
 
