@@ -1,8 +1,5 @@
 module github.com/stelgkio/woocommerce
 
-go 1.14
+go 1.22.0
 
-require (
-	github.com/google/go-querystring v1.0.0
-	github.com/shopspring/decimal v1.2.0
-)
+require github.com/google/go-querystring v1.1.0
