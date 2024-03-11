@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dghubble/oauth1"
 	"github.com/google/go-querystring/query"
 )
 
@@ -78,7 +79,7 @@ func (a App) NewClient(shopName string, opts ...Option) *Client {
 // token. The shopName parameter is the shop's wooCommerce website domain,
 // e.g. "shop.gitvim.com"
 func NewClient(app App, shopName string, opts ...Option) *Client {
-	baseURL, err := url.Parse(ShopBaseURL(shopName))
+	baseURL, err := url.Parse(shopName)
 	if err != nil {
 		panic(err)
 	}
@@ -125,12 +126,29 @@ func (c *Client) Do(req *http.Request, v interface{}) error {
 func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, error) {
 	var resp *http.Response
 	var err error
+
 	retries := c.retries
 	c.attempts = 0
 	c.logRequest(req)
+	// Check if the scheme is "https"
+	if req.URL.Scheme == "https" {
+		q := req.URL.Query()
+		q.Set("consumer_key", c.app.CustomerKey)
+		q.Set("consumer_secret", c.app.CustomerSecret)
+		req.URL.RawQuery = q.Encode()
+		fmt.Println("The URL is HTTPS")
+	} else {
+		// Create a new OAuth1 configuration
+		config := oauth1.NewConfig(c.app.CustomerKey, c.app.CustomerSecret)
+		token := oauth1.NewToken("", "")
 
+		// Create an OAuth1 HTTP client
+		c.Client = config.Client(oauth1.NoContext, token)
+		fmt.Println("The URL is not HTTPS")
+	}
 	for {
 		c.attempts++
+
 		resp, err = c.Client.Do(req)
 
 		c.logResponse(resp)
@@ -443,7 +461,7 @@ func (c *Client) Delete(path string, options, resource interface{}) error {
 	return c.CreateAndDo("DELETE", path, nil, options, resource)
 }
 
-//  ListOptions represent ist options that can be used for most collections of entities.
+// ListOptions represent ist options that can be used for most collections of entities.
 type ListOptions struct {
 	Context string  `url:"context,omitempty"`
 	Page    int     `url:"page,omitempty"`
