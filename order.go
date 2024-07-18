@@ -175,7 +175,7 @@ type LineItem struct {
 type TaxLine struct {
 	ID               int64      `json:"id,omitempty"`
 	RateCode         string     `json:"rate_code,omitempty"`
-	RateId           string     `json:"rate_id,omitempty"`
+	RateId           int64      `json:"rate_id,omitempty"`
 	Label            string     `json:"label,omitempty"`
 	Compound         bool       `json:"compound,omitempty"`
 	TaxTotal         string     `json:"tax_total"`
