@@ -70,7 +70,7 @@ type Product struct {
 	PriceHtml         string        `json:"price_html,omitempty"`
 	OnSale            bool          `json:"on_sale,omitempty"`
 	Purchasable       bool          `json:"purchasable,omitempty"`
-	TotalSales        string           `json:"total_sales,omitempty"`
+	TotalSales        string        `json:"total_sales,omitempty"`
 	Virtual           bool          `json:"virtual,omitempty"`
 	Downloadable      bool          `json:"downloadable,omitempty"`
 	Downloads         []Download    `json:"downloads,omitempty"`
