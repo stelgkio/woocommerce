@@ -1,127 +1,228 @@
 package woocommerce
 
 import (
-	"net/url"
-	"regexp"
-	"strconv"
-	"strings"
+	"fmt"
+	"net/http"
 )
 
-var linkRegex = regexp.MustCompile(`^ *<([^>]+)>; rel="(prev|next|first|last)" *$`)
+const (
+	productsBasePath = "products"
+)
 
-// ProductService allows you to create, view, update, and delete individual, or a batch, of products
+// ProductService is an interface for interfacing with the products endpoints of WooCommerce API
 // https://woocommerce.github.io/woocommerce-rest-api-docs/#products
 type ProductService interface {
-	Create()
-	Get()
-	Delete()
-	List()
-	Update()
-	BatchUpdate()
+	Create(product Product) (*Product, error)
+	Get(productID int64, options interface{}) (*Product, error)
+	List(options interface{}) ([]Product, error)
+	Update(product *Product) (*Product, error)
+	Delete(productID int64, options interface{}) (*Product, error)
+	Batch(option ProductBatchOption) (*ProductBatchResource, error)
 }
 
-// Product represent WooCommerce Product
-// https://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
-type Product struct {
-}
-
+// ProductServiceOp handles communication with the product related methods of the WooCommerce API
 type ProductServiceOp struct {
 	client *Client
 }
 
-// Pagination of results
-type Pagination struct {
-	NextPageOptions     *ListOptions
-	PreviousPageOptions *ListOptions
-	FirstPageOptions    *ListOptions
-	LastPageOptions     *ListOptions
+
+
+// ProductBatchOption allows for batch operations on products
+// https://woocommerce.github.io/woocommerce-rest-api-docs/#batch-update-products
+type ProductBatchOption struct {
+	Create []Product `json:"create,omitempty"`
+	Update []Product `json:"update,omitempty"`
+	Delete []int64   `json:"delete,omitempty"`
 }
 
-func (p *ProductServiceOp) Create() {
-
+// ProductBatchResource handles the response struct for ProductBatchOption request
+type ProductBatchResource struct {
+	Create []*Product `json:"create,omitempty"`
+	Update []*Product `json:"update,omitempty"`
+	Delete []*Product `json:"delete,omitempty"`
 }
 
-func (p *ProductServiceOp) Get() {
-
+// Product represents a WooCommerce Product
+// https://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
+type Product struct {
+	ID                int64         `json:"id,omitempty"`
+	Name              string        `json:"name,omitempty"`
+	Slug              string        `json:"slug,omitempty"`
+	Permalink         string        `json:"permalink,omitempty"`
+	DateCreated       string        `json:"date_created,omitempty"`
+	DateCreatedGmt    string        `json:"date_created_gmt,omitempty"`
+	DateModified      string        `json:"date_modified,omitempty"`
+	DateModifiedGmt   string        `json:"date_modified_gmt,omitempty"`
+	Type              string        `json:"type,omitempty"`
+	Status            string        `json:"status,omitempty"`
+	Featured          bool          `json:"featured,omitempty"`
+	CatalogVisibility string        `json:"catalog_visibility,omitempty"`
+	Description       string        `json:"description,omitempty"`
+	ShortDescription  string        `json:"short_description,omitempty"`
+	Sku               string        `json:"sku,omitempty"`
+	Price             string        `json:"price,omitempty"`
+	RegularPrice      string        `json:"regular_price,omitempty"`
+	SalePrice         string        `json:"sale_price,omitempty"`
+	DateOnSaleFrom    string        `json:"date_on_sale_from,omitempty"`
+	DateOnSaleFromGmt string        `json:"date_on_sale_from_gmt,omitempty"`
+	DateOnSaleTo      string        `json:"date_on_sale_to,omitempty"`
+	DateOnSaleToGmt   string        `json:"date_on_sale_to_gmt,omitempty"`
+	PriceHtml         string        `json:"price_html,omitempty"`
+	OnSale            bool          `json:"on_sale,omitempty"`
+	Purchasable       bool          `json:"purchasable,omitempty"`
+	TotalSales        int           `json:"total_sales,omitempty"`
+	Virtual           bool          `json:"virtual,omitempty"`
+	Downloadable      bool          `json:"downloadable,omitempty"`
+	Downloads         []Download    `json:"downloads,omitempty"`
+	DownloadLimit     int           `json:"download_limit,omitempty"`
+	DownloadExpiry    int           `json:"download_expiry,omitempty"`
+	ExternalUrl       string        `json:"external_url,omitempty"`
+	ButtonText        string        `json:"button_text,omitempty"`
+	TaxStatus         string        `json:"tax_status,omitempty"`
+	TaxClass          string        `json:"tax_class,omitempty"`
+	ManageStock       bool          `json:"manage_stock,omitempty"`
+	StockQuantity     int           `json:"stock_quantity,omitempty"`
+	StockStatus       string        `json:"stock_status,omitempty"`
+	Backorders        string        `json:"backorders,omitempty"`
+	BackordersAllowed bool          `json:"backorders_allowed,omitempty"`
+	Backordered       bool          `json:"backordered,omitempty"`
+	SoldIndividually  bool          `json:"sold_individually,omitempty"`
+	Weight            string        `json:"weight,omitempty"`
+	Dimensions        *Dimensions   `json:"dimensions,omitempty"`
+	ShippingRequired  bool          `json:"shipping_required,omitempty"`
+	ShippingTaxable   bool          `json:"shipping_taxable,omitempty"`
+	ShippingClass     string        `json:"shipping_class,omitempty"`
+	ShippingClassId   int64         `json:"shipping_class_id,omitempty"`
+	ReviewsAllowed    bool          `json:"reviews_allowed,omitempty"`
+	AverageRating     string        `json:"average_rating,omitempty"`
+	RatingCount       int           `json:"rating_count,omitempty"`
+	RelatedIds        []int64       `json:"related_ids,omitempty"`
+	UpsellIds         []int64       `json:"upsell_ids,omitempty"`
+	CrossSellIds      []int64       `json:"cross_sell_ids,omitempty"`
+	ParentId          int64         `json:"parent_id,omitempty"`
+	PurchaseNote      string        `json:"purchase_note,omitempty"`
+	Categories        []Category    `json:"categories,omitempty"`
+	Tags              []Tag         `json:"tags,omitempty"`
+	Images            []Image       `json:"images,omitempty"`
+	Attributes        []Attribute   `json:"attributes,omitempty"`
+	DefaultAttributes []DefaultAttr `json:"default_attributes,omitempty"`
+	Variations        []int64       `json:"variations,omitempty"`
+	GroupedProducts   []int64       `json:"grouped_products,omitempty"`
+	MenuOrder         int           `json:"menu_order,omitempty"`
+	MetaData          []MetaData    `json:"meta_data,omitempty"`
+	Links             Links         `json:"_links,omitempty"`
 }
 
-func (p *ProductServiceOp) Delete() {
-
+type Dimensions struct {
+	Length string `json:"length,omitempty"`
+	Width  string `json:"width,omitempty"`
+	Height string `json:"height,omitempty"`
 }
 
-func (p *ProductServiceOp) List() {
-
+type Download struct {
+	Id   int64  `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	File string `json:"file,omitempty"`
 }
 
-func (p *ProductServiceOp) Update() {
-
+type Category struct {
+	Id   int64  `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Slug string `json:"slug,omitempty"`
 }
 
-func (p *ProductServiceOp) BatchUpdate() {
-
+type Tag struct {
+	Id   int64  `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Slug string `json:"slug,omitempty"`
 }
 
-// extractPagination extracts pagination info from linkHeader.
-// Details on the format are here:
-// https://woocommerce.github.io/woocommerce-rest-api-docs/#pagination
-// Link: <https://www.example.com/wp-json/wc/v3/products?page=2>; rel="next",
-// <https://www.example.com/wp-json/wc/v3/products?page=3>; rel="last"`
-func extractPagination(linkHeader string) (*Pagination, error) {
-	pagination := new(Pagination)
+type Image struct {
+	Id              int64  `json:"id,omitempty"`
+	DateCreated     string `json:"date_created,omitempty"`
+	DateCreatedGmt  string `json:"date_created_gmt,omitempty"`
+	DateModified    string `json:"date_modified,omitempty"`
+	DateModifiedGmt string `json:"date_modified_gmt,omitempty"`
+	Src             string `json:"src,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Alt             string `json:"alt,omitempty"`
+	Position        int    `json:"position,omitempty"`
+}
 
-	if linkHeader == "" {
-		return pagination, nil
+type Attribute struct {
+	Id        int64    `json:"id,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Position  int      `json:"position,omitempty"`
+	Visible   bool     `json:"visible,omitempty"`
+	Variation bool     `json:"variation,omitempty"`
+	Options   []string `json:"options,omitempty"`
+}
+
+type DefaultAttr struct {
+	Id     int64  `json:"id,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Option string `json:"option,omitempty"`
+}
+
+func (p *ProductServiceOp) List(options interface{}) ([]Product, error) {
+	products, _, err := p.ListWithPagination(options)
+	return products, err
+}
+
+// ListWithPagination lists products and returns pagination to retrieve next/previous results.
+func (p *ProductServiceOp) ListWithPagination(options interface{}) ([]Product, *Pagination, error) {
+	path := fmt.Sprintf("%s", productsBasePath)
+	resource := make([]Product, 0)
+	headers := http.Header{}
+	headers, err := p.client.createAndDoGetHeaders("GET", path, nil, options, &resource)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Extract pagination info from header
+	linkHeader := headers.Get("Link")
+	fmt.Println(linkHeader)
+	pagination, err := extractPagination(linkHeader)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	for _, link := range strings.Split(linkHeader, ",") {
-		match := linkRegex.FindStringSubmatch(link)
-		// Make sure the link is not empty or invalid
-		println("mm", len(match))
-		if len(match) != 4 {
-			// We expect 3 values:
-			// match[0] = full match
-			// match[1] is the URL and match[2] is either 'previous' or 'next', 'first', 'last'
-			err := ResponseDecodingError{
-				Message: "could not extract pagination link header",
-			}
-			return nil, err
-		}
+	return resource, pagination, err
+}
 
-		rel, err := url.Parse(match[1])
-		if err != nil {
-			err = ResponseDecodingError{
-				Message: "pagination does not contain a valid URL",
-			}
-			return nil, err
-		}
+func (p *ProductServiceOp) Create(product Product) (*Product, error) {
+	path := fmt.Sprintf("%s", productsBasePath)
+	resource := new(Product)
+	err := p.client.Post(path, product, &resource)
+	return resource, err
+}
 
-		params, err := url.ParseQuery(rel.RawQuery)
-		if err != nil {
-			return nil, err
-		}
+// Get individual product
+func (p *ProductServiceOp) Get(productID int64, options interface{}) (*Product, error) {
+	path := fmt.Sprintf("%s/%d", productsBasePath, productID)
+	resource := new(Product)
+	err := p.client.Get(path, resource, options)
+	return resource, err
+}
 
-		paginationListOptions := ListOptions{}
+// Update existing product
+func (p *ProductServiceOp) Update(product *Product) (*Product, error) {
+	path := fmt.Sprintf("%s/%d", productsBasePath, product.ID)
+	resource := new(Product)
+	err := p.client.Put(path, product, &resource)
+	return resource, err
+}
 
-		page := params.Get("page")
-		if page != "" {
-			paginationListOptions.Page, err = strconv.Atoi(params.Get("page"))
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		switch match[2] {
-		case "next":
-			pagination.NextPageOptions = &paginationListOptions
-		case "prev":
-			pagination.PreviousPageOptions = &paginationListOptions
-		case "first":
-			pagination.FirstPageOptions = &paginationListOptions
-		case "last":
-			pagination.LastPageOptions = &paginationListOptions
-		}
-
-	}
-
-	return pagination, nil
+// Delete existing product
+func (p *ProductServiceOp) Delete(productID int64, options interface{}) (*Product, error) {
+	path := fmt.Sprintf("%s/%d", productsBasePath, productID)
+	resource := new(Product)
+	err := p.client.Delete(path, options, &resource)
+	return resource, err
+}
+// Batch implements ProductService.
+func (p *ProductServiceOp) Batch(data ProductBatchOption) (*ProductBatchResource, error) {
+	path := fmt.Sprintf("%s/batch", productsBasePath)
+	resource := new(ProductBatchResource)
+	err := p.client.Post(path, data, &resource)
+	return resource, err
 }
