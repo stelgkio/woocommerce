@@ -65,6 +65,7 @@ type Client struct {
 	OrderNote      OrderNoteService
 	Webhook        WebhookService
 	PaymentGateway PaymentGatewayService
+	Report         ReportService
 }
 
 // NewClient returns a new WooCommerce API client with an already authenticated shopname and
@@ -100,6 +101,7 @@ func NewClient(app App, shopName string, opts ...Option) *Client {
 	c.OrderNote = &OrderNoteServiceOp{client: c}
 	c.Webhook = &WebhookServiceOp{client: c}
 	c.PaymentGateway = &PaymentGatewayServiceOp{client: c}
+	c.Report = &ReportServiceOp{client: c}
 	for _, opt := range opts {
 		opt(c)
 	}
