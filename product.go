@@ -3,6 +3,7 @@ package woocommerce
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 const (
@@ -25,7 +26,29 @@ type ProductServiceOp struct {
 	client *Client
 }
 
-
+type ProductListOptions struct {
+	ListOptions
+	ModifiedAfter    time.Time `json:"modified_after,omitempty" url:"modified_after,omitempty"`
+	ModifiedBefore   time.Time `json:"modified_before,omitempty" url:"modified_before,omitempty"`
+	DatesAreGMT      bool      `json:"dates_are_gmt,omitempty" url:"dates_are_gmt,omitempty"`
+	Parent           []int     `json:"parent,omitempty" url:"parent,omitempty"`
+	ParentExclude    []int     `json:"parent_exclude,omitempty" url:"parent_exclude,omitempty"`
+	Slug             string    `json:"slug,omitempty" url:"slug,omitempty"`
+	Status           string    `json:"status,omitempty" url:"status,omitempty"`
+	Type             string    `json:"type,omitempty" url:"type,omitempty"`
+	SKU              string    `json:"sku,omitempty" url:"sku,omitempty"`
+	Featured         bool      `json:"featured,omitempty" url:"featured,omitempty"`
+	Category         string    `json:"category,omitempty" url:"category,omitempty"`
+	Tag              string    `json:"tag,omitempty" url:"tag,omitempty"`
+	ShippingClass    string    `json:"shipping_class,omitempty" url:"shipping_class,omitempty"`
+	Attribute        string    `json:"attribute,omitempty" url:"attribute,omitempty"`
+	AttributeTerm    string    `json:"attribute_term,omitempty" url:"attribute_term,omitempty"`
+	TaxClass         string    `json:"tax_class,omitempty" url:"tax_class,omitempty"`
+	OnSale           bool      `json:"on_sale,omitempty" url:"on_sale,omitempty"`
+	MinPrice         string    `json:"min_price,omitempty" url:"min_price,omitempty"`
+	MaxPrice         string    `json:"max_price,omitempty" url:"max_price,omitempty"`
+	StockStatus      string    `json:"stock_status,omitempty" url:"stock_status,omitempty"`
+}
 
 // ProductBatchOption allows for batch operations on products
 // https://woocommerce.github.io/woocommerce-rest-api-docs/#batch-update-products
@@ -80,7 +103,7 @@ type Product struct {
 	ButtonText        string        `json:"button_text,omitempty"`
 	TaxStatus         string        `json:"tax_status,omitempty"`
 	TaxClass          string        `json:"tax_class,omitempty"`
-	ManageStock       bool          `json:"manage_stock,omitempty"`
+	ManageStock       any          `json:"manage_stock,omitempty"`
 	StockQuantity     int           `json:"stock_quantity,omitempty"`
 	StockStatus       string        `json:"stock_status,omitempty"`
 	Backorders        string        `json:"backorders,omitempty"`
