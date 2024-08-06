@@ -15,7 +15,7 @@ const (
 type ProductVariationService interface {
 	Create(productID int64, variation Product) (*Product, error)
 	Get(productID, variationID int64, options interface{}) (*Product, error)
-	List(productID int64, options interface{}) ([]Product, error)
+	List(productID int64, options interface{}) ([]Product, *Pagination, error)
 	Update(productID, variationID int64, variation *Product) (*Product, error)
 	Delete(productID, variationID int64, options interface{}) (*Product, error)
 	Batch(productID int64, data ProductBatchOption) (*ProductBatchResource, error)

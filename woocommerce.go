@@ -58,14 +58,15 @@ type Client struct {
 	retries  int
 	attempts int
 
-	RateLimits     RateLimitInfo
-	Product        ProductService
-	Customer       CustomerService
-	Order          OrderService
-	OrderNote      OrderNoteService
-	Webhook        WebhookService
-	PaymentGateway PaymentGatewayService
-	Report         ReportService
+	RateLimits       RateLimitInfo
+	Product          ProductService
+	ProductVariation ProductVariationService
+	Customer         CustomerService
+	Order            OrderService
+	OrderNote        OrderNoteService
+	Webhook          WebhookService
+	PaymentGateway   PaymentGatewayService
+	Report           ReportService
 }
 
 // NewClient returns a new WooCommerce API client with an already authenticated shopname and
@@ -96,6 +97,7 @@ func NewClient(app App, shopName string, opts ...Option) *Client {
 	}
 
 	c.Product = &ProductServiceOp{client: c}
+	c.ProductVariation = &ProductVariationServiceOp{client: c}
 	c.Customer = &CustomerServiceOp{client: c}
 	c.Order = &OrderServiceOp{client: c}
 	c.OrderNote = &OrderNoteServiceOp{client: c}
@@ -490,6 +492,7 @@ type DeleteOption struct {
 }
 
 var linkRegex = regexp.MustCompile(`^ *<([^>]+)>; rel="(prev|next|first|last)" *$`)
+
 // Pagination of results
 type Pagination struct {
 	NextPageOptions     *ListOptions
