@@ -28,26 +28,26 @@ type ProductServiceOp struct {
 
 type ProductListOptions struct {
 	ListOptions
-	ModifiedAfter    time.Time `json:"modified_after,omitempty" url:"modified_after,omitempty"`
-	ModifiedBefore   time.Time `json:"modified_before,omitempty" url:"modified_before,omitempty"`
-	DatesAreGMT      bool      `json:"dates_are_gmt,omitempty" url:"dates_are_gmt,omitempty"`
-	Parent           []int     `json:"parent,omitempty" url:"parent,omitempty"`
-	ParentExclude    []int     `json:"parent_exclude,omitempty" url:"parent_exclude,omitempty"`
-	Slug             string    `json:"slug,omitempty" url:"slug,omitempty"`
-	Status           string    `json:"status,omitempty" url:"status,omitempty"`
-	Type             string    `json:"type,omitempty" url:"type,omitempty"`
-	SKU              string    `json:"sku,omitempty" url:"sku,omitempty"`
-	Featured         bool      `json:"featured,omitempty" url:"featured,omitempty"`
-	Category         string    `json:"category,omitempty" url:"category,omitempty"`
-	Tag              string    `json:"tag,omitempty" url:"tag,omitempty"`
-	ShippingClass    string    `json:"shipping_class,omitempty" url:"shipping_class,omitempty"`
-	Attribute        string    `json:"attribute,omitempty" url:"attribute,omitempty"`
-	AttributeTerm    string    `json:"attribute_term,omitempty" url:"attribute_term,omitempty"`
-	TaxClass         string    `json:"tax_class,omitempty" url:"tax_class,omitempty"`
-	OnSale           bool      `json:"on_sale,omitempty" url:"on_sale,omitempty"`
-	MinPrice         string    `json:"min_price,omitempty" url:"min_price,omitempty"`
-	MaxPrice         string    `json:"max_price,omitempty" url:"max_price,omitempty"`
-	StockStatus      string    `json:"stock_status,omitempty" url:"stock_status,omitempty"`
+	ModifiedAfter  time.Time `json:"modified_after,omitempty" url:"modified_after,omitempty"`
+	ModifiedBefore time.Time `json:"modified_before,omitempty" url:"modified_before,omitempty"`
+	DatesAreGMT    bool      `json:"dates_are_gmt,omitempty" url:"dates_are_gmt,omitempty"`
+	Parent         []int     `json:"parent,omitempty" url:"parent,omitempty"`
+	ParentExclude  []int     `json:"parent_exclude,omitempty" url:"parent_exclude,omitempty"`
+	Slug           string    `json:"slug,omitempty" url:"slug,omitempty"`
+	Status         string    `json:"status,omitempty" url:"status,omitempty"`
+	Type           string    `json:"type,omitempty" url:"type,omitempty"`
+	SKU            string    `json:"sku,omitempty" url:"sku,omitempty"`
+	Featured       bool      `json:"featured,omitempty" url:"featured,omitempty"`
+	Category       string    `json:"category,omitempty" url:"category,omitempty"`
+	Tag            string    `json:"tag,omitempty" url:"tag,omitempty"`
+	ShippingClass  string    `json:"shipping_class,omitempty" url:"shipping_class,omitempty"`
+	Attribute      string    `json:"attribute,omitempty" url:"attribute,omitempty"`
+	AttributeTerm  string    `json:"attribute_term,omitempty" url:"attribute_term,omitempty"`
+	TaxClass       string    `json:"tax_class,omitempty" url:"tax_class,omitempty"`
+	OnSale         bool      `json:"on_sale,omitempty" url:"on_sale,omitempty"`
+	MinPrice       string    `json:"min_price,omitempty" url:"min_price,omitempty"`
+	MaxPrice       string    `json:"max_price,omitempty" url:"max_price,omitempty"`
+	StockStatus    string    `json:"stock_status,omitempty" url:"stock_status,omitempty"`
 }
 
 // ProductBatchOption allows for batch operations on products
@@ -103,7 +103,7 @@ type Product struct {
 	ButtonText        string        `json:"button_text,omitempty"`
 	TaxStatus         string        `json:"tax_status,omitempty"`
 	TaxClass          string        `json:"tax_class,omitempty"`
-	ManageStock       any          `json:"manage_stock,omitempty"`
+	ManageStock       any           `json:"manage_stock,omitempty"`
 	StockQuantity     int           `json:"stock_quantity,omitempty"`
 	StockStatus       string        `json:"stock_status,omitempty"`
 	Backorders        string        `json:"backorders,omitempty"`
@@ -143,7 +143,7 @@ type Dimensions struct {
 }
 
 type Download struct {
-	Id   int64  `json:"id,omitempty"`
+	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 	File string `json:"file,omitempty"`
 }
@@ -188,28 +188,28 @@ type DefaultAttr struct {
 }
 
 func (p *ProductServiceOp) List(options interface{}) ([]Product, error) {
-	products, _, err := p.ListWithPagination(options)
+	products, err := p.ListWithPagination(options)
 	return products, err
 }
 
 // ListWithPagination lists products and returns pagination to retrieve next/previous results.
-func (p *ProductServiceOp) ListWithPagination(options interface{}) ([]Product, *Pagination, error) {
+func (p *ProductServiceOp) ListWithPagination(options interface{}) ([]Product, error) {
 	path := fmt.Sprintf("%s", productsBasePath)
 	resource := make([]Product, 0)
 	headers := http.Header{}
 	headers, err := p.client.createAndDoGetHeaders("GET", path, nil, options, &resource)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// Extract pagination info from header
 	linkHeader := headers.Get("Link")
 	fmt.Println(linkHeader)
-	pagination, err := extractPagination(linkHeader)
-	if err != nil {
-		return nil, nil, err
-	}
+	// pagination, err := extractPagination(linkHeader)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	return resource, pagination, err
+	return resource, err
 }
 
 func (p *ProductServiceOp) Create(product Product) (*Product, error) {
@@ -242,6 +242,7 @@ func (p *ProductServiceOp) Delete(productID int64, options interface{}) (*Produc
 	err := p.client.Delete(path, options, &resource)
 	return resource, err
 }
+
 // Batch implements ProductService.
 func (p *ProductServiceOp) Batch(data ProductBatchOption) (*ProductBatchResource, error) {
 	path := fmt.Sprintf("%s/batch", productsBasePath)

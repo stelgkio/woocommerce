@@ -225,18 +225,18 @@ type CouponLine struct {
 }
 
 func (o *OrderServiceOp) List(options interface{}) ([]Order, error) {
-	orders, _, err := o.ListWithPagination(options)
+	orders, err := o.ListWithPagination(options)
 	return orders, err
 }
 
 // ListWithPagination lists products and return pagination to retrieve next/previous results.
-func (o *OrderServiceOp) ListWithPagination(options interface{}) ([]Order, *Pagination, error) {
+func (o *OrderServiceOp) ListWithPagination(options interface{}) ([]Order, error) {
 	path := fmt.Sprintf("%s", ordersBasePath)
 	resource := make([]Order, 0)
 	headers := http.Header{}
 	headers, err := o.client.createAndDoGetHeaders("GET", path, nil, options, &resource)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// Extract pagination info from header
 	linkHeader := headers.Get("Link")
@@ -246,7 +246,7 @@ func (o *OrderServiceOp) ListWithPagination(options interface{}) ([]Order, *Pagi
 	// 	return nil, nil, err
 	// }
 
-	return resource, nil, err
+	return resource, err
 }
 
 func (o *OrderServiceOp) Create(order Order) (*Order, error) {

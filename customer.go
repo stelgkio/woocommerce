@@ -30,8 +30,8 @@ type CustomerServiceOp struct {
 // https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-customers
 type CustomerListOption struct {
 	ListOptions
-	Email    string `url:"email,omitempty"`
-	Role     string `url:"role,omitempty"`
+	Email string `url:"email,omitempty"`
+	Role  string `url:"role,omitempty"`
 }
 
 // CustomerBatchOption allows for batch operations on customers
@@ -52,48 +52,48 @@ type CustomerBatchResource struct {
 // Customer represents a WooCommerce Customer
 // https://woocommerce.github.io/woocommerce-rest-api-docs/#customer-properties
 type Customer struct {
-	ID                int64         `json:"id,omitempty"`
-	Email             string        `json:"email,omitempty"`
-	FirstName         string        `json:"first_name,omitempty"`
-	LastName          string        `json:"last_name,omitempty"`
-	Role              string        `json:"role,omitempty"`
-	Username          string        `json:"username,omitempty"`
-	Billing           *Billing      `json:"billing,omitempty"`
-	Shipping          *Shipping     `json:"shipping,omitempty"`
-	DateCreated       string        `json:"date_created,omitempty"`
-	DateCreatedGmt    string        `json:"date_created_gmt,omitempty"`
-	DateModified      string        `json:"date_modified,omitempty"`
-	DateModifiedGmt   string        `json:"date_modified_gmt,omitempty"`
-	OrdersCount       int           `json:"orders_count,omitempty"`
-	TotalSpent        string        `json:"total_spent,omitempty"`
-	AvatarURL         string        `json:"avatar_url,omitempty"`
-	MetaData          []MetaData    `json:"meta_data,omitempty"`
-	Links             Links         `json:"_links,omitempty"`
+	ID              int64      `json:"id,omitempty"`
+	Email           string     `json:"email,omitempty"`
+	FirstName       string     `json:"first_name,omitempty"`
+	LastName        string     `json:"last_name,omitempty"`
+	Role            string     `json:"role,omitempty"`
+	Username        string     `json:"username,omitempty"`
+	Billing         *Billing   `json:"billing,omitempty"`
+	Shipping        *Shipping  `json:"shipping,omitempty"`
+	DateCreated     string     `json:"date_created,omitempty"`
+	DateCreatedGmt  string     `json:"date_created_gmt,omitempty"`
+	DateModified    string     `json:"date_modified,omitempty"`
+	DateModifiedGmt string     `json:"date_modified_gmt,omitempty"`
+	OrdersCount     int        `json:"orders_count,omitempty"`
+	TotalSpent      string     `json:"total_spent,omitempty"`
+	AvatarURL       string     `json:"avatar_url,omitempty"`
+	MetaData        []MetaData `json:"meta_data,omitempty"`
+	Links           Links      `json:"_links,omitempty"`
 }
 
 func (c *CustomerServiceOp) List(options interface{}) ([]Customer, error) {
-	customers, _, err := c.ListWithPagination(options)
+	customers, err := c.ListWithPagination(options)
 	return customers, err
 }
 
 // ListWithPagination lists customers and returns pagination to retrieve next/previous results.
-func (c *CustomerServiceOp) ListWithPagination(options interface{}) ([]Customer, *Pagination, error) {
+func (c *CustomerServiceOp) ListWithPagination(options interface{}) ([]Customer, error) {
 	path := fmt.Sprintf("%s", customersBasePath)
 	resource := make([]Customer, 0)
 	headers := http.Header{}
 	headers, err := c.client.createAndDoGetHeaders("GET", path, nil, options, &resource)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// Extract pagination info from header
 	linkHeader := headers.Get("Link")
 	fmt.Println(linkHeader)
-	pagination, err := extractPagination(linkHeader)
-	if err != nil {
-		return nil, nil, err
-	}
+	// pagination, err := extractPagination(linkHeader)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
-	return resource, pagination, err
+	return resource, err
 }
 
 func (c *CustomerServiceOp) Create(customer Customer) (*Customer, error) {

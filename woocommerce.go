@@ -142,7 +142,7 @@ func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, er
 		q.Set("consumer_key", c.app.CustomerKey)
 		q.Set("consumer_secret", c.app.CustomerSecret)
 		req.URL.RawQuery = q.Encode()
-		fmt.Println("The URL is HTTPS")
+		//fmt.Println("The URL is HTTPS")
 	} else {
 		// Create a new OAuth1 configuration
 		config := oauth1.NewConfig(c.app.CustomerKey, c.app.CustomerSecret)
@@ -150,7 +150,7 @@ func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, er
 
 		// Create an OAuth1 HTTP client
 		c.Client = config.Client(oauth1.NoContext, token)
-		fmt.Println("The URL is not HTTPS")
+		fmt.Println("The URL is not HTTPS", req.URL.Scheme)
 	}
 	for {
 		c.attempts++
