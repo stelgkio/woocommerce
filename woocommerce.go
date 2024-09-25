@@ -488,7 +488,7 @@ type ListOptions struct {
 // but the order's status became to be trash.
 // it is better to setting force's column value be "false" rather then  "true"
 type DeleteOption struct {
-	Force bool `json:"force,omitempty"`
+	Force bool `json:"force,omitempty" url:"force,omitempty"`
 }
 
 var linkRegex = regexp.MustCompile(`^ *<([^>]+)>; rel="(prev|next|first|last)" *$`)
